@@ -53,6 +53,51 @@ class RedBlackTree{
         }
         Root->color = "BLACK";
     }
+    Node* deleteNode(Node *&root, int data) {
+        if (root == NIL || root == nullptr) return NIL;
+
+        if (data < root->data)
+            root->left = deleteNode(root->left, data);
+
+        else if (data > root->data)
+            root->right = deleteNode(root->right, data);
+
+        else {
+            // Node to delete is found
+            if (root->left == NIL) { // Only right child or no child
+                Node* temp = root->right;
+                if (temp != NIL) temp->parent = root->parent;
+                return temp; }
+            else if (root->right == nullptr) { // Only left child
+                Node* temp = root->left;
+                if (temp != NIL) temp->parent = root->parent;
+                return temp; }
+
+            // Node has two children, find the successor
+            Node* temp = successor(root->right);
+            root->data = temp->data;
+            root->right = deleteNode(root->right, temp->data); // Delete the successor
+        }
+        return root;
+    }
+
+    Node* predecessor(Node *&node) { // max in left subtree
+        Node *ptr = node;
+        while (ptr->left != nullptr)
+            ptr = ptr->left;
+
+        return ptr;
+    }
+
+    Node* successor(Node *&node) { // min in right subtree
+        Node *ptr = node;
+
+        while (ptr->right != nullptr)
+            ptr = ptr->right;
+
+        return ptr;
+    }
+
     void LeftRotate(Node* x){
         Node* y = x->right;
         x->right= y->left;
@@ -72,7 +117,7 @@ class RedBlackTree{
         x->parent = y ;
     }
     void RightRotate(Node* x){
-        Node* y = x->left; //
+        Node* y = x->left;
         x->left= y->right;
         if(y->right!= NIL){
             y->right->parent = x;
@@ -128,8 +173,18 @@ public:
 
         if (x->parent->parent == nullptr) {
             return; }
-
         fixInsert(x);  }
+
+    void deleteValue(int data) {
+        Node *node = deleteNode(Root, data);
+        if (node == nullptr) return;
+        if (node->color == "BLACK") {
+           // fixDeleteRBTree(node);
+        }
+        delete node;
+
+    }
+
     void Inorder(){
         InorderHelper(Root);}
 
@@ -141,5 +196,7 @@ int main() {
     r.insert(31);
     r.insert(6);
     r.insert(3);
+    r.Inorder();
+    r.deleteValue(4);
     r.Inorder();
 }
