@@ -33,7 +33,6 @@ class RedBlackTree{
                     x->parent->parent->color = "RED";
                     RightRotate(x->parent->parent); }
             }
-
             else {
                 Node* uncle = x->parent->parent->left;
                 if(uncle->color=="RED"){
@@ -53,6 +52,68 @@ class RedBlackTree{
         }
         Root->color = "BLACK";
     }
+
+    void fixDelete(Node* x) {
+        Node* s;
+        while (x != Root && x->color == "BLACK") {
+            if (x == x->parent->left) {
+                s = x->parent->right;
+                if (s->color == "RED") {
+                    s->color = "BLACK";
+                    x->parent->color = "RED";
+                    LeftRotate(x->parent);
+                    s = x->parent->right;
+                }
+                if (s->left->color == "BLACK" && s->right->color == "BLACK") {
+                    s->color = "RED";
+                    x = x->parent;
+                } else {
+                    if (s->right->color == "BLACK" && s->left->color == "RED") {
+                        s->left->color = "BLACK";
+                        s->color = "RED";
+                        RightRotate(s);
+                        s = x->parent->right;
+                    }
+
+                    s->color = x->parent->color;
+                    x->parent->color = "BLACK";
+                    s->right->color = "BLACK";
+                    LeftRotate(x->parent);
+                    x = Root;
+                }
+            } else {
+                s = x->parent->left;
+                if (s->color == "RED") {
+                    s->color = "BLACK";
+                    x->parent->color = "RED";
+                    RightRotate(x->parent);
+                    s = x->parent->left;
+                }
+
+                if (s->right->color == "BLACK" && s->right->color == "BLACK") {
+                    s->color = "RED";
+                    x = x->parent;
+                } else {
+                    if (s->left->color == "BLACK"&&s->right->color == "RED") {
+                        s->right->color = "BLACK";
+                        s->color = "RED";
+                        LeftRotate(s);
+                        s = x->parent->left;
+                    }
+
+                    s->color = x->parent->color;
+                    x->parent->color = "BLACK";
+                    s->left->color = "BLACK";
+                    RightRotate(x->parent);
+                    x = Root;
+                }
+            }
+        }
+        x->color = "BLACK";
+    }
+
+
+
     Node* deleteNode(Node *&root, int data) {
         if (root == NIL || root == nullptr) return NIL;
 
@@ -66,11 +127,13 @@ class RedBlackTree{
             // Node to delete is found
             if (root->left == NIL) { // Only right child or no child
                 Node* temp = root->right;
-                if (temp != NIL) temp->parent = root->parent;
+                if (temp != NIL)
+                    temp->parent = root->parent;
                 return temp; }
             else if (root->right == nullptr) { // Only left child
                 Node* temp = root->left;
-                if (temp != NIL) temp->parent = root->parent;
+                if (temp != NIL)
+                    temp->parent = root->parent;
                 return temp; }
 
             // Node has two children, find the successor
@@ -83,17 +146,16 @@ class RedBlackTree{
 
     Node* predecessor(Node *&node) { // max in left subtree
         Node *ptr = node;
-        while (ptr->left != nullptr)
-            ptr = ptr->left;
+        while (ptr->right != NIL)
+            ptr = ptr->right;
 
         return ptr;
     }
 
     Node* successor(Node *&node) { // min in right subtree
         Node *ptr = node;
-
-        while (ptr->right != nullptr)
-            ptr = ptr->right;
+        while (ptr->left != NIL)
+            ptr = ptr->left;
 
         return ptr;
     }
@@ -138,7 +200,7 @@ class RedBlackTree{
     void InorderHelper(Node* node){
         if(node != NIL){
             InorderHelper(node->left);
-            cout<<node->data<<" "<<node->color<<" ";
+            cout<<"( "<<node->data<<" -> "<<node->color<<" ) ";
             InorderHelper(node->right);
         }
     }
@@ -176,13 +238,11 @@ public:
         fixInsert(x);  }
 
     void deleteValue(int data) {
-        Node *node = deleteNode(Root, data);
-        if (node == nullptr) return;
+        Node* node = deleteNode(Root, data);
+        if (node == NIL) return;
         if (node->color == "BLACK") {
-           // fixDeleteRBTree(node);
+            fixDelete(node);
         }
-        delete node;
-
     }
 
     void Inorder(){
@@ -190,13 +250,17 @@ public:
 
 };
 int main() {
-    RedBlackTree r ;
+    RedBlackTree r;
     r.insert(4);
     r.insert(22);
     r.insert(31);
     r.insert(6);
     r.insert(3);
+    cout<<"Inorder Traversal of the tree after Insertion:\n";
     r.Inorder();
+    cout<<"\n";
+    cout<<"\n";
     r.deleteValue(4);
+    cout<<"Inorder Traversal of the tree after Deletion:\n";
     r.Inorder();
 }
